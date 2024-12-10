@@ -143,9 +143,7 @@ st.markdown("""
 1. **Insufficient Representation**: A small dataset may not adequately represent the overall trends or variability in the stock price or sentiment data. This can lead to overfitting in machine learning models.
 2. **Reduced Statistical Power**: The smaller the dataset, the less reliable statistical analyses become. Predictions and conclusions drawn from such analyses may not generalize to new data.
 3. **Limited Context**: Small datasets often miss critical nuances, such as the influence of macroeconomic factors or sector-wide news, leading to oversimplified insights.
-4. **Increased Noise-to-Signal Ratio**: Small datasets are more susceptible to random fluctuations, making it harder to discern meaningful patterns.
-
-It is recommended to use a larger and more diverse dataset to achieve robust and reliable analysis results.
+4. **Increased Noise-to-Signal Ratio**: Small datasets are more susceptible to random fluctuations, making it harder to determine meaningful patterns.
 """)
 
 # Visualize Data with Correlation and Predictions
@@ -153,7 +151,6 @@ st.subheader("Step 3: Visualize Stock Prices, Sentiment, and Predictions")
 st.markdown("""
 In this step, you can visualize the relationship between stock prices and sentiment over time and assess how well the model predicts future price movements.
 - Correlation between stock prices and sentiment is calculated and displayed.
-- Actual vs. predicted movements are added to the visualization for deeper insights.
 """)
 
 if st.button("Visualize Data"):
