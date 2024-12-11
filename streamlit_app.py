@@ -14,7 +14,6 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import os
 
-# Title and Introduction
 st.title("Stock Price and Sentiment Analysis Using FinBERT")
 st.markdown("""
 **Author:** Layne Hunt  
@@ -98,7 +97,6 @@ if st.button("Fetch Data"):
     except Exception as e:
         st.error(f"Error fetching data: {e}")
 
-# Combine Stock and Sentiment Data
 st.subheader("Step 2: Combine Stock and Sentiment Data")
 st.markdown("""
 In this step, the stock price data and the sentiment scores are combined into a single dataset for further analysis.
@@ -111,32 +109,25 @@ if st.button("Combine Data"):
         elif not st.session_state.news_data_fetched:
             st.warning("Sentiment data is missing. Please fetch sentiment data before combining.")
         else:
-            # Ensure single-level columns for stock data
             stock_data_simple = st.session_state.stock_data_simple.reset_index(drop=True)
             if isinstance(stock_data_simple.columns, pd.MultiIndex):
                 stock_data_simple.columns = stock_data_simple.columns.get_level_values(0)
 
-            # Ensure 'date' column compatibility
             stock_data_simple['date'] = pd.to_datetime(stock_data_simple['date']).dt.date
             news_daily_sentiment = st.session_state.news_daily_sentiment.copy()
             news_daily_sentiment['date'] = pd.to_datetime(news_daily_sentiment['date']).dt.date
 
-            # Perform the merge
             combined_data = pd.merge(stock_data_simple, news_daily_sentiment, on='date', how='left').fillna(0)
 
-            # Add an average sentiment column (optional)
             combined_data['average_sentiment'] = combined_data['news_sentiment']
 
-            # Store combined data in session state
             st.session_state.combined_data = combined_data
             st.write("Combined Data Sample:", combined_data.head())
     except Exception as e:
         st.error(f"Error combining data: {e}")
         
         
-# Visualization and Modeling sections remain the same.
 
-# Section explaining data limitations
 st.subheader("Important Note on Data Limitations")
 st.markdown("""
 ### Why a Small Dataset is Problematic for Analysis
@@ -155,7 +146,6 @@ In this step, you can visualize the relationship between stock prices and sentim
 
 if st.button("Visualize Data"):
     try:
-        # Show date inputs for News Date Range with unique keys
         st.markdown("### Select News Date Range for Visualization")
         start_date_news = st.date_input("Visualization Start Date:", pd.Timestamp("2024-11-10"), key="visual_start_date")
         end_date_news = st.date_input("Visualization End Date:", pd.Timestamp("2024-12-08"), key="visual_end_date")
@@ -163,7 +153,6 @@ if st.button("Visualize Data"):
         if "combined_data" not in st.session_state or st.session_state.combined_data.empty:
             st.warning("Combined data is not available. Please combine the data first.")
         else:
-            # Filter combined data based on selected date range
             combined_data = st.session_state.combined_data
             filtered_data = combined_data[
                 (combined_data['date'] >= start_date_news) & (combined_data['date'] <= end_date_news)
@@ -172,23 +161,18 @@ if st.button("Visualize Data"):
             if filtered_data.empty:
                 st.warning("No data available for the selected date range.")
             else:
-                # Normalize data for visualization
                 scaler = MinMaxScaler()
                 filtered_data['adjusts_normalized'] = scaler.fit_transform(filtered_data[['adjusts']])
                 filtered_data['average_sentiment_normalized'] = scaler.fit_transform(filtered_data[['average_sentiment']])
 
-                # Calculate correlation
                 correlation = filtered_data[['adjusts', 'average_sentiment']].corr().iloc[0, 1]
 
-                # Add predictions if available
                 if 'predictions' not in filtered_data:
-                    # Add a placeholder for model predictions (binary: 1 for increase, 0 for decrease)
                     filtered_data['predictions'] = (filtered_data['adjusts_normalized'].shift(-1) > 
                                                     filtered_data['adjusts_normalized']).astype(int)
                 filtered_data['actual'] = (filtered_data['adjusts_normalized'].shift(-1) >
                                            filtered_data['adjusts_normalized']).astype(int)
 
-                # Plot data
                 plt.figure(figsize=(12, 6))
                 plt.plot(filtered_data['date'], filtered_data['adjusts_normalized'], label='Normalized Stock Price')
                 plt.plot(filtered_data['date'], filtered_data['average_sentiment_normalized'], label='Normalized Sentiment', linestyle='--')
@@ -215,7 +199,6 @@ This section allows you to apply a machine learning model (Random Forest Classif
 - A confusion matrix will be displayed to illustrate the classification results for one of the evaluations.
 """)
 
-# Slider to choose the number of evaluations
 num_evaluations = st.slider("Number of Model Evaluations:", min_value=1, max_value=10, value=1, step=1)
 
 if st.button("Run Predictive Model Multiple Times"):
@@ -226,33 +209,26 @@ if st.button("Run Predictive Model Multiple Times"):
             combined_data = st.session_state.combined_data
             combined_data.dropna(inplace=True)
 
-            # Prepare data for modeling
             features = ['adjusts', 'average_sentiment']
             X = combined_data[features]
             y = (combined_data['adjusts'].shift(-1) > combined_data['adjusts']).astype(int)  # Binary labels: 1 if price increases, else 0
 
-            # Store results across evaluations
             accuracy_list = []
             confusion_matrices = []
 
             for i in range(num_evaluations):
-                # Split data
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=i)
 
-                # Train Random Forest model
                 model = RandomForestClassifier(n_estimators=100, random_state=i)
                 model.fit(X_train, y_train)
                 predictions = model.predict(X_test)
 
-                # Calculate accuracy
                 accuracy = accuracy_score(y_test, predictions)
                 accuracy_list.append(accuracy)
 
-                # Confusion Matrix
                 cm = confusion_matrix(y_test, predictions)
                 confusion_matrices.append(cm)
 
-            # Display the confusion matrix with actual and predicted labels
             st.write("Confusion Matrix with Actual and Predicted Labels:")
             accuracy = accuracy_score(y_test, predictions)
             st.write(f"**Accuracy of the Model:** {accuracy:.2f}")
@@ -266,7 +242,6 @@ if st.button("Run Predictive Model Multiple Times"):
     except Exception as e:
         st.error(f"Error in predictive modeling: {e}")
 
-# End of App
 st.markdown("""
 ### Final Thoughts
 This app demonstrates a workflow for combining stock price and sentiment data, visualizing trends, and applying predictive models. While the process is functional, real-world applications require larger and more robust datasets to ensure reliability and generalizability.
